@@ -1,99 +1,47 @@
 use std::collections::HashMap;
 
 fn main() {
-
-
     let input: String = std::fs::read_to_string("input.txt").expect("");
-    let input_lines: Vec<&str> = input.split("\n").collect::<Vec<&str>>();
-    // if input_lines.last().unwrap().len() == 0 {input_lines.pop();}
+    let input_lines: Vec<&str> = input.split("\n").filter(|x| x.len() > 0).collect();
 
     let seeds = input_lines[0].split(": ").collect::<Vec<&str>>()[1].split(" ").map(|x| x.parse::<u64>().unwrap()).collect::<Vec<u64>>();
-    println!("{:?}", seeds);
     
-    let mut seed_to_soil: HashMap<u64, (u64, u64)> = HashMap::new();
-    let mut soil_to_fertilizer: HashMap<u64, (u64, u64)> = HashMap::new();
-    let mut fertilizer_to_water: HashMap<u64, (u64, u64)> = HashMap::new();
-    let mut water_to_light: HashMap<u64, (u64, u64)> = HashMap::new();
-    let mut light_to_temperature: HashMap<u64, (u64, u64)> = HashMap::new();
-    let mut temperature_to_humidity: HashMap<u64, (u64, u64)> = HashMap::new();
-    let mut humidity_to_location: HashMap<u64, (u64, u64)> = HashMap::new();
+    let map_names = ["seed-to-soil map:", "soil-to-fertilizer map:", "fertilizer-to-water map:", "water-to-light map:", "light-to-temperature map:", "temperature-to-humidity map:", "humidity-to-location map:"];
+    let mut big_map: HashMap<&str, HashMap<u64, (u64, u64)>> = HashMap::new();
+    for map_name in map_names {big_map.insert(map_name, HashMap::new());}
 
-    let mut it = 2;
-    while it < input_lines.len() {
-        let line = input_lines[it];
-        
-        // Extract
-        if line == "seed-to-soil map:" {
-            it+=1;
-            let line = input_lines[it];
-            while line != "" {
-                let (source, destination, range) = destructure(line);
-                seed_to_soil.insert(source, (destination, range));
-            }
-        }
+    let mut current_map: &mut HashMap<u64, (u64, u64)> = &mut HashMap::new();
 
-        if line == "soil-to-fertilizer map:" {
-            it+=1;
-            let line = input_lines[it];
-            while line != "" {
-                let (source, destination, range) = destructure(line);
-                soil_to_fertilizer.insert(source, (destination, range));
-            }
-        }
-        
-        if line == "fertilizer-to-water map:" {
-            it+=1;
-            let line = input_lines[it];
-            while line != "" {
-                let (source, destination, range) = destructure(line);
-                fertilizer_to_water.insert(source, (destination, range));
-            }
-        }
+    println!("Mapping");
 
-        if line == "water-to-light map:" {
-            it+=1;
-            let line = input_lines[it];
-            while line != "" {
-                let (source, destination, range) = destructure(line);
-                water_to_light.insert(source, (destination, range));
-            }
+    for line in &input_lines[1..] {
+        if line.contains("map") {
+            current_map = big_map.get_mut(*line).unwrap();
         }
-
-        if line == "light-to-temperature map:" {
-            it+=1;
-            let line = input_lines[it];
-            while line != "" {
-                let (source, destination, range) = destructure(line);
-                light_to_temperature.insert(source, (destination, range));
-            }
-        }
-
-        if line == "temperature-to-humidity map:" {
-            it+=1;
-            let line = input_lines[it];
-            while line != "" {
-                let (source, destination, range) = destructure(line);
-                temperature_to_humidity.insert(source, (destination, range));
-            }
-        }
-
-        if line == "humidity-to-location map:" {
-            it+=1;
-            let line = input_lines[it];
-            while line != "" {
-                let (source, destination, range) = destructure(line);
-                humidity_to_location.insert(source, (destination, range));
-            }
+        else {
+            let (source, destination, range) = destructure(*line);
+            current_map.insert(source, (destination, range));
         }
     }
+    println!("Done mapping");
 
-    let mut lowest_seed = u64::MAX;
     let mut lowest_location = u64::MAX;
 
-    for seed in seeds {
-        
+    println!("Translating");
+    for seed in seeds {        
+        let mut temp: u64 = seed;
+        println!("\nTranslating seed {}", seed);
+        for map_name in map_names {
+            println!("Translating through {}", map_name);
+            temp = translate(big_map.get(map_name).unwrap(), temp);
+        }
+        if temp < lowest_location {
+            lowest_location = temp;
+            println!("---New lowest! {}---", temp);
+        }
     }
 
+    println!("P1 {}", lowest_location);
 }
 
 
@@ -107,8 +55,20 @@ fn destructure(line: &str) -> (u64, u64, u64) {
 }
 
 fn translate(map: &HashMap<u64, (u64, u64)>, source: u64) -> u64 {
-    let mut keys = map.keys().collect::<Vec<u64>>();
+    let mut keys = map.keys().collect::<Vec<&u64>>();
     keys.sort();
-    // for key in 
-    return 1;
+    
+    for key in keys {
+        if key <= &source {
+            let (target, range) = map.get(key).unwrap();
+            if (key + range) >= source {
+                let result = target + source - key;
+                println!("K({}) {} -> {}", key, source, result);
+                return result;
+            }
+        }
+    }
+
+    println!("{} -> {}", source, source);
+    return source;
 }
