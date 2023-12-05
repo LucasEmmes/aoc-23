@@ -12,7 +12,6 @@ fn main() {
 
     let mut current_map: &mut HashMap<u64, (u64, u64)> = &mut HashMap::new();
 
-    println!("Mapping");
 
     for line in &input_lines[1..] {
         if line.contains("map") {
@@ -23,25 +22,35 @@ fn main() {
             current_map.insert(source, (destination, range));
         }
     }
-    println!("Done mapping");
 
     let mut lowest_location = u64::MAX;
-
-    println!("Translating");
-    for seed in seeds {        
-        let mut temp: u64 = seed;
-        println!("\nTranslating seed {}", seed);
+    
+    for seed in &seeds {        
+        let mut temp: u64 = *seed;
         for map_name in map_names {
-            println!("Translating through {}", map_name);
             temp = translate(big_map.get(map_name).unwrap(), temp);
         }
         if temp < lowest_location {
             lowest_location = temp;
-            println!("---New lowest! {}---", temp);
+        }
+    }
+    
+    println!("P1 {}", lowest_location);
+
+    lowest_location = u64::MAX;
+    for i in (0..seeds.len()).step_by(2) {
+        for j in 0..seeds[i+1] {
+            let mut temp: u64 = seeds[i]+j;
+            for map_name in map_names {
+                temp = translate(big_map.get(map_name).unwrap(), temp);
+            }
+            if temp < lowest_location {
+                lowest_location = temp;
+            }
         }
     }
 
-    println!("P1 {}", lowest_location);
+    println!("P2 {}", lowest_location);
 }
 
 
@@ -63,12 +72,10 @@ fn translate(map: &HashMap<u64, (u64, u64)>, source: u64) -> u64 {
             let (target, range) = map.get(key).unwrap();
             if (key + range) >= source {
                 let result = target + source - key;
-                println!("K({}) {} -> {}", key, source, result);
                 return result;
             }
         }
     }
 
-    println!("{} -> {}", source, source);
     return source;
 }
