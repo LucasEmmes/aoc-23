@@ -1,4 +1,6 @@
 fn main() {
+    use std::time::Instant;
+    let now= Instant::now();
 
     let input: String = std::fs::read_to_string("input.txt").expect("");
     let input_lines: Vec<&str> = input.split("\n").collect::<Vec<&str>>();
@@ -17,6 +19,8 @@ fn main() {
 
     println!("P2 {}", get_possibilities(time, distance));
 
+    let elapsed = now.elapsed();
+    println!("Time: {:.2?}", elapsed);
 }
 
 fn get_possibilities(time: f64, distance: f64) -> i64 {
