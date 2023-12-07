@@ -13,6 +13,9 @@ enum HandType {
 }
 
 fn main() {
+	use std::time::Instant;
+	let now = Instant::now();
+
     let mut evaluate: HashMap<char, i64> = HashMap::new();
     evaluate.insert('A', 13);
     evaluate.insert('K', 12);
@@ -65,7 +68,7 @@ fn main() {
         p2 += hands[i].1 * (i as i64 +1);
     }
     println!("P2 {}", p2);
-    
+    println!("Elapsed: {:2?}", now.elapsed());
 }
 
 fn get_hand_type_p1(hand: &(&str, i64), evaluate: &HashMap<char, i64>) -> HandType {
