@@ -36,18 +36,11 @@ fn main() {
     println!("P1 {}", counter_p1);
 
     
-    let mut steps: Vec<HashSet<(&str, u64)>> = Vec::new();
-    
-    // let mut currents: Vec<&str> = Vec::new();
-    // for position in nodes.keys() {
-    //     if position.ends_with("A") {
-    //         currents.push(position);
-    //     }
-    // }
+    let mut steps: HashMap<&str, HashSet<(&str, u64)>> = HashMap::new();
+    let mut starts: Vec<&str> = Vec::new();    
 
-    // let mut counter_p2 = 0;
     // while !done(&currents) {
-    //     let lr = directions[counter_p2 % directions.len()];
+    //     let lr = directions[counter % directions.len()];
     //     for i in 0..currents.len() {
     //         let mut current = currents[i];
     //         if let Some(next_node) = nodes.get(current) {
@@ -59,17 +52,17 @@ fn main() {
     //         }
     //         currents[i] = current;
     //     }
-    //     counter_p2 += 1;
+    //     counter += 1;
     // }
 
     // println!("P2 {}", counter_p2);
 
 }
 
-fn done(currents: &Vec<&str>) -> bool {
-    let mut all_end = true;
-        for current in currents {
-        all_end &= current.ends_with("Z");
-    }
-    return all_end;
-}
+// fn done(currents: &Vec<&str>) -> bool {
+//     let mut all_end = true;
+//         for current in currents {
+//         all_end &= current.ends_with("Z");
+//     }
+//     return all_end;
+// }
