@@ -8,6 +8,7 @@ fn main() {
     let directions = input_lines[0].chars().collect::<Vec<char>>();
 
     let mut nodes: HashMap<&str, (&str, &str)> = HashMap::new();
+    let mut starts: Vec<&str> = Vec::new();
 
     for line in &input_lines[1..] {
         // "RBX = (TMF, KTP)" => ["RBX", "=", "(TMF,", "KTP)"]
@@ -17,6 +18,9 @@ fn main() {
         let name_left = &names[2][1..names[2].len()-1];
         let name_right = &names[3][..names[3].len()-1];
         nodes.insert(&name_from, (name_left, name_right));
+        if name_from.ends_with("A") {
+            starts.push(&name_from);
+        }
     }
 
     
@@ -36,33 +40,43 @@ fn main() {
     println!("P1 {}", counter_p1);
 
     
-    let mut steps: HashMap<&str, HashSet<(&str, u64)>> = HashMap::new();
-    let mut starts: Vec<&str> = Vec::new();    
+    let mut cycle_times: Vec<i64> = Vec::new();
 
-    // while !done(&currents) {
-    //     let lr = directions[counter % directions.len()];
-    //     for i in 0..currents.len() {
-    //         let mut current = currents[i];
-    //         if let Some(next_node) = nodes.get(current) {
-    //             if lr == 'L' {
-    //                 current = next_node.0;
-    //             } else if lr == 'R' {
-    //                 current = next_node.1;
-    //             }
-    //         }
-    //         currents[i] = current;
-    //     }
-    //     counter += 1;
-    // }
+    for start in starts {
+        let mut current = start;
+        let mut seen: HashSet<(&str, i64)> = HashSet::new();
+        let mut counter: usize = 0;
 
-    // println!("P2 {}", counter_p2);
+        loop {
+            seen.insert((current, (counter%directions.len()) as i64));
+            let next_node = nodes.get(current).unwrap();
+            if directions[counter%directions.len()] == 'L' {
+                current = next_node.0;
+            } else {
+                current = next_node.1;
+            }
+            counter += 1;
+
+            if current.ends_with("Z") {
+                cycle_times.push(counter as i64);
+                break;
+            }
+        }
+    }
+
+    let gcd = &cycle_times.clone().into_iter().reduce(|a, b| GCD(a, b)).unwrap();
+
+    let mut reduced_cycles = Vec::new();
+    for cycle in &cycle_times {
+        reduced_cycles.push(cycle / gcd);
+    }
+
+    let p2 = &reduced_cycles.clone().into_iter().reduce(|a, b| a*b).unwrap() * gcd;
+    println!("P2 {p2}");
 
 }
 
-// fn done(currents: &Vec<&str>) -> bool {
-//     let mut all_end = true;
-//         for current in currents {
-//         all_end &= current.ends_with("Z");
-//     }
-//     return all_end;
-// }
+fn GCD(a: i64, b: i64) -> i64 {
+    if b == 0 {return a;}
+    return GCD(b, a%b);
+}
