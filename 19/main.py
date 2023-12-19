@@ -11,6 +11,12 @@ class MP:
     a: int
     s: int
 
+def mp_parser(line: str) -> str:
+    # {x=787,m=2655,a=1222,s=2876}
+    line = line[1:-1]
+    xr, mr, ar, sr = line.split(",")
+    return MP(int(xr[2:]), int(mr[2:]), int(ar[2:]), int(sr[2:]))
+
 def rule_creator(rule: str):
     attr = rule[0]
     cmp = rule[1]
@@ -34,6 +40,7 @@ def rule_creator(rule: str):
 def main(file):
     with open(file, "r") as f:
         lines = list(filter(lambda x: len(x) > 0, f.read().split("\n")))
+
 
 
 
