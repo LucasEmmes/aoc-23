@@ -57,7 +57,7 @@ fn main() {
     known_rules.insert("A", [MultiRange::make(0,4000), MultiRange::make(0,4000), MultiRange::make(0,4000), MultiRange::make(0,4000)]);
 
 
-    // println!("{:?}", get_definition(&vec!["m>1548:A"], "A"));
+    println!("{:?}", get_definition(&vec!["m>1548:R,a>45:A,a<10:A"], "R", &known_rules));
 
     // let mut i: usize = 0;
     // while lines.len() > 0 {
@@ -102,33 +102,37 @@ fn rule_is_fully_defined(raw_rule: &str, known_rules: &HashMap<&str,[MultiRange;
 }
 
 fn get_definition(raw_rules: &Vec<&str>, fallback: &str, known_rules: &HashMap<&str,[MultiRange;4]>) -> [MultiRange;4] {
-    let mut ranges: Vec<[MultiRange;4]> = Vec::new();
-    for raw_rule in raw_rules {
-        let temp = raw_rule.split(":").collect::<Vec<&str>>();
-        let rule_string = temp[0];
+    let mut rule_ranges: Vec<[MultiRange;4]> = Vec::new();
+    for raw_rule_with_value in raw_rules {
+        let temp = raw_rule_with_value.split(":").collect::<Vec<&str>>();
+        let raw_rule = temp[0];
         let value = temp[1];
-        
-        let known = known_rules.get(value).unwrap();
-        let current = get_range_map(rule_string);
-        let mut tempranges: [MultiRange;4] = [MultiRange::make(0,4000), MultiRange::make(0,4000), MultiRange::make(0,4000), MultiRange::make(0,4000)];
-        for i in 0..4 {
-            tempranges[i] = get_range_overlap(&known[i], &current[i]);
-        }
-        ranges.push(tempranges);
-    }
-    
-    // let mut result = known_rules.get(fallback).unwrap().clone();
-    // for range in ranges {
-    //     let mut tempranges: [MultiRange;4] = [MultiRange::make(0,4000), MultiRange::make(0,4000), MultiRange::make(0,4000), MultiRange::make(0,4000)];
-    //     for i in 0..4 {
-    //         tempranges[i] = get_range_overlap(&known[i], &current[i]);
-    //     }
-    // }
+        let mut rule_range = get_range_map(&raw_rule, value=="R");
+        println!("rule_range: {:?}", rule_range);
+        let value_range = {
+            if value != "R" {known_rules.get(value).unwrap().clone()}
+            else {rule_range.clone()}
+        };
 
-    [MultiRange::make(0,4000), MultiRange::make(0,4000), MultiRange::make(0,4000), MultiRange::make(0,4000)]
+        println!("value_range: {:?}", value_range);
+        for i in 0..4 {
+            rule_range[i] = get_range_overlap(&rule_range[i], &value_range[i]);
+        }
+        println!("overlap gives {:?}", rule_range);
+        rule_ranges.push(rule_range);
+    }
+
+    let mut fallback_range = known_rules.get(fallback).unwrap().clone();
+    for rule_range in rule_ranges {
+        for i in 0..4 {
+            fallback_range[i] = get_range_union(&fallback_range[i], &rule_range[i]);
+        }
+    }
+
+    fallback_range
 }
 
-fn get_range_map(inp: &str) -> [MultiRange;4] {
+fn get_range_map(inp: &str, inverse: bool) -> [MultiRange;4] {
     let attr: &str = &inp[..1];
     let cmp: &str = &inp[1..2];
     let n: i64 = inp[2..].parse::<i64>().unwrap();
@@ -144,7 +148,7 @@ fn get_range_map(inp: &str) -> [MultiRange;4] {
         }
     };
     
-    if cmp == "<" {
+    if (cmp == "<" && !inverse) || (cmp == ">" && inverse) {
         ranges[i] = MultiRange::make(0,n-1);
     }
     else {

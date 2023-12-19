@@ -90,8 +90,12 @@ def solve(data: List[Tuple[int, int]]) -> float:
     edges: List[Edge] = []
     coords_expanded: List[Pos] = []
 
+    straights = 0
+
     for (direction, amount) in data:
         current_pos = copy(coords[-1])
+
+        straights += (amount - 1)
 
         if direction == "R": current_pos.x += amount
         if direction == "L": current_pos.x -= amount
@@ -105,7 +109,8 @@ def solve(data: List[Tuple[int, int]]) -> float:
     for pos in coords:
         coords_expanded.append(find_expanded_coord(pos, edges))
 
-    return calc_volume(coords_expanded)
+    # return calc_volume(coords_expanded)
+    return calc_volume(coords) + straights*0.5 + (len(coords)+1)/2
 
 
 
