@@ -113,6 +113,16 @@ def main(file):
     with open(file, "r") as f:
         lines = list(filter(lambda x: len(x) > 0, f.read().split("\n")))
     
+    # STEPS FOR EACH PART
+        
+    # Create polygon based off instructions:
+        # Extract direction and number of steps
+        # Create new vertex at position we move to and add to list
+        # Create edge between the last vertex and this new one
+    # Expand polygon:
+        # For every vertex, move it outwards from the polygon by 0.5
+
+
     # P1 -----------------------------------------------------------------------
     data_p1: List[Tuple[int, int]] = []
 
