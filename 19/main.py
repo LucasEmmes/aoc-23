@@ -8,17 +8,21 @@ import math
 class RangeGroup:
     ranges: List[range]
 
+WorkFlow = List[RangeGroup]
+
 def range_union(a: range, b: range) -> List[range]:
     if (a.stop < b.start-1) or (b.stop < a.start-1):
         return [a, b]
     else:
         return [range(min(a.start, b.start), max(a.stop, b.stop))]
 
+
 def range_overlap(a: range, b: range) -> List[range]:
     if (a.stop < b.start) or (b.stop < a.start):
         return [range(0,0)]
     else:
         return [range(max(a.start, b.start), min(a.stop, b.stop))]
+
 
 def rangegroup_compress(group: RangeGroup) -> RangeGroup:
     if len(group.ranges) == 0: return group
@@ -36,12 +40,14 @@ def rangegroup_compress(group: RangeGroup) -> RangeGroup:
 
     return RangeGroup(compressed)
 
+
 def rangegroup_union(a: RangeGroup, b: RangeGroup) -> RangeGroup:
     union_list: List[range] = []
     for arange in a.ranges:
         for brange in b.ranges:
             union_list += range_union(arange, brange)
     return rangegroup_compress(RangeGroup(union_list))
+
 
 def rangegroup_overlap(a: RangeGroup, b: RangeGroup) -> RangeGroup:
     overlap_list: List[range] = []
@@ -50,9 +56,39 @@ def rangegroup_overlap(a: RangeGroup, b: RangeGroup) -> RangeGroup:
             overlap_list += range_overlap(arange, brange)
     return rangegroup_compress(RangeGroup(overlap_list))
 
+# workflow_str = qqz{s>2770:qs,m<1801:hdj,R}
+# rules_string = s>2770:qs,m<1801:hdj
+# rule_string = s>2770:qs
+
+def split_raw_workflow(workflow_str: str) -> Tuple[str, List[str], str]:
+    pass
+
+def is_fully_defined(rules_string: List[str], fallback: str, known_workflows: Dict[str, WorkFlow]) -> bool:
+    # Check if fallback is invalid
+    if fallback not in known_workflows.keys() and fallback not in "AR": return False
+    # Check if any individual rule is invalid
+    for rule_string in rules_string:
+        destination_workflow_name = rule_string.split(":")[1]
+        if destination_workflow_name not in known_workflows.keys() and destination_workflow_name not in "AR": return False
+    return True
+
+a = """px{a<2006:qkq,m>2090:A,rfg}
+pv{a>1716:R,A}
+lnx{m>1548:A,A}
+rfg{s<537:gd,x>2440:R,A}
+qs{s>3448:A,lnx}
+qkq{x<1416:A,crn}
+crn{x>2662:A,R}
+in{s<1351:px,qqz}
+qqz{s>2770:qs,m<1801:hdj,R}
+gd{a>3333:R,R}
+hdj{m>838:A,pv}"""
+
 def main(file):
     with open(file, "r") as f:
         lines = list(filter(lambda x: len(x) > 0, f.read().split("\n")))
+
+
 
 def cassert(a, b):
     if (a != b):

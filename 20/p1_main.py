@@ -112,24 +112,6 @@ def create_module(raw_string: str) -> Module:
     elif raw_string.startswith("&"):
         return Conjunction(raw_string[1:])
 
-def serialize(modules: Dict[str, Module]) -> str:
-    mask = ""
-    for v in modules.values():
-        mask += "|"
-        if type(v) == FlipFlop:
-            mask += "1" if v.current_state else "0"
-            mask += "|"
-            for sig, src in v.memories:
-                mask += "1" if sig else "0"
-                mask += src + ","
-        elif type(v) == Conjunction:
-            for inp in v.previous_inputs.values():
-                mask += "1" if inp else "0"
-            mask += "|"
-            for sig, src in v.memories:
-                mask += "1" if sig else "0"
-                mask += src + ","
-    return mask
 
 def main(file):
     with open(file, "r") as f:
@@ -163,11 +145,10 @@ def main(file):
                 output_module.previous_inputs[module.name] = False
         module.outputs = outputs
 
+
     high = 0
     low = 0
-
-    print(serialize(modules))
-    for _ in range(1):
+    for _ in range(1000):
         low += 1
         broadcaster = modules["broadcaster"]
         broadcaster.trigger(False, "")
@@ -186,34 +167,6 @@ def main(file):
     print(f"{low=}, {high=}")
     print(f"P1 {low*high}")
 
-    print(serialize(modules))
-
-    # # # Reset for p2
-    # for module in modules.values():
-    #     if type(module) == FlipFlop:
-    #         module.current_state = False
-    #     elif type(module) == Conjunction:
-    #         for k in module.previous_inputs.keys():
-    #             module.previous_inputs[k] = False
-            
-    # i = 1
-    # while True:
-    #     if i%100000 == 0: print(f"{i//1000}K")
-    #     broadcaster = modules["broadcaster"]
-    #     broadcaster.trigger(False, "")
-    #     triggered_modules, _ = broadcaster.execute()
-    #     queue: List[Module] = triggered_modules
-    #     next_queue: List[Module] = []
-    #     while len(queue) > 0:
-    #         for module in queue:
-    #             triggered_modules, signal = module.execute()
-    #             if signal == -2:
-    #                 print(f"P2 {i}")
-    #                 exit()
-    #             next_queue += triggered_modules
-    #         queue = next_queue
-    #         next_queue = []
-    #     i += 1
 
 if __name__ == "__main__":
     file = "demo.txt"
